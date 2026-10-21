@@ -1,0 +1,11 @@
+.env
+.env.*
+*.env
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+instance/
+sample_property_pdfs/
+Wholesale_Scout_Sample_Property_PDFs.zip

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Property deal calculator | Wholesale Scout{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> PROPERTY DEAL ANALYSIS</p>
+        <h1>See the numbers.<br><span>Know the opportunity.</span></h1>
+        <p class="hero-lede">Run the numbers as you go, compare property strategies, and turn a promising deal into a polished report.</p>
+        <a class="text-link" href="{{ url_for('pdf_studio') }}">Explore the editable PDF studio <span aria-hidden="true">→</span></a>
+    </div>
+    <aside class="hero-note">
+        <span class="note-icon">✳</span>
+        <p class="note-label">A better first look</p>
+        <p>Change the figures below to see estimates update instantly. Your original deal calculator stays right here on the home page.</p>
+    </aside>
+</section>
+
+<section class="workspace" aria-label="Live property calculator">
+    <div class="form-panel">
+        <div class="section-heading">
+            <div><p class="eyebrow">LIVE CALCULATOR</p><h2>Build your deal</h2></div>
+            <span class="live-pill"><span></span> Live</span>
+        </div>
+        <div class="example-row" aria-label="Example deals">
+            <span>Try an example</span>
+            <button type="button" class="example-chip" data-example="rental">Starter rental</button>
+            <button type="button" class="example-chip" data-example="hmo">HMO</button>
+            <button type="button" class="example-chip" data-example="flip">Flip</button>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="deal-form" data-live-calculator>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field-grid">
+                <div class="field full-width">
+                    <label for="property_type">Property strategy</label>
+                    <select id="property_type" name="property_type">
+                        {% for key, item in property_types.items() %}
+                        <option value="{{ key }}" {% if form_data.get('property_type', 'single_family_rental') == key %}selected{% endif %}>{{ item.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field full-width">
+                    <label for="property_address">Property address <span class="optional">Optional</span></label>
+                    <input id="property_address" name="property_address" type="text" maxlength="160" placeholder="Street, town or postcode" value="{{ form_data.get('property_address', '') }}">
+                </div>
+                <div class="field">
+                    <label for="purchase_price">Purchase price <span>(£)</span></label>
+                    <input id="purchase_price" name="purchase_price" type="number" min="1" step="0.01" placeholder="250,000" value="{{ form_data.get('purchase_price', '') }}" required>
+                </div>
+                <div class="field">
+                    <label for="monthly_rent">Monthly rent per unit <span>(£)</span></label>
+                    <input id="monthly_rent" name="monthly_rent" type="number" min="0" step="0.01" placeholder="1,500" value="{{ form_data.get('monthly_rent', '') }}">
+                </div>
+                <div class="field" data-hmo-field>
+                    <label for="bedrooms">Bedrooms / rentable units</label>
+                    <input id="bedrooms" name="bedrooms" type="number" min="1" step="1" value="{{ form_data.get('bedrooms', '5') }}">
+                </div>
+                <div class="field">
+                    <label for="sq_ft">Floor area <span>(sq ft)</span></label>
+                    <input id="sq_ft" name="sq_ft" type="number" min="1" step="0.01" placeholder="1,200" value="{{ form_data.get('sq_ft', '') }}" required>
+                </div>
+                <div class="field">
+                    <label for="refurb_cost">Refurbishment budget <span>(£)</span></label>
+                    <input id="refurb_cost" name="refurb_cost" type="number" min="0" step="0.01" placeholder="Estimate automatically" value="{{ form_data.get('refurb_cost', '') }}">
+                    <small>Leave blank to estimate from area and condition.</small>
+                </div>
+                <div class="field" data-arv-field>
+                    <label for="arv">After-repair value <span>(£)</span></label>
+                    <input id="arv" name="arv" type="number" min="0" step="0.01" placeholder="330,000" value="{{ form_data.get('arv', '') }}">
+                </div>
+                <div class="field full-width">
+                    <label for="summary">Condition notes <span class="optional">Optional</span></label>
+                    <input id="summary" name="summary" type="text" maxlength="500" placeholder="e.g. dated kitchen, modern windows" value="{{ form_data.get('summary', '') }}">
+                </div>
+                <div class="field full-width">
+                    <label for="photo">Property photo <span class="optional">Optional AI analysis</span></label>
+                    <input id="photo" name="photo" type="file" accept="image/*">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="button button-primary" type="submit" name="action" value="calculate">Calculate deal <span aria-hidden="true">→</span></button>
+                <button class="button button-secondary" type="submit" name="action" value="download_pdf">Download fillable PDF</button>
+            </div>
+        </form>
+        {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+        {% if result %}
+        <div class="server-result">
+            <strong>{{ result.property_label }} analysis</strong>
+            <span>{{ result.headline_label }}: {% if result.property_type == 'flip' %}£{{ '{:,.2f}'.format(result.headline_value) }}{% else %}{{ '%.2f'|format(result.headline_value) }}%{% endif %}</span>
+            <span>Estimated refurbishment: £{{ '{:,.2f}'.format(result.estimated_refurb) }}</span>
+        </div>
+        {% endif %}
+    </div>
+    <aside class="results-panel" aria-live="polite" aria-atomic="true">
+        <div class="results-topline"><span class="result-spark">✳</span><span>YOUR DEAL SNAPSHOT</span></div>
+        <p class="result-property-type" data-result-property>Single-family rental</p>
+        <p class="result-label" data-result-headline-label>Net rental yield</p>
+        <p class="result-number" data-result-headline>—</p>
+        <div class="rating-row"><span>Deal indicator</span><span class="rating-badge" data-result-rating>—</span></div>
+        <div class="metric-list">
+            <div><span>Gross rental yield</span><strong data-result-gross>—</strong></div>
+            <div><span>Estimated refurbishment</span><strong data-result-refurb>—</strong></div>
+            <div><span>Total capital required</span><strong data-result-capital>—</strong></div>
+            <div><span>Annual rental income</span><strong data-result-income>—</strong></div>
+        </div>
+        <p class="result-footnote">Live figures are estimates. Actual costs, rent and returns will vary.</p>
+    </aside>
+</section>
+
+<section class="type-section">
+    <div class="section-heading">
+        <div><p class="eyebrow">ONE WORKSPACE, FIVE STRATEGIES</p><h2>Reports that fit the property</h2></div>
+        <a class="text-link" href="{{ url_for('pdf_studio') }}">Open PDF studio <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="type-grid">
+        {% for key, item in property_types.items() %}
+        <a href="{{ url_for('pdf_studio', property_type=key) }}" class="type-card">
+            <span class="type-mark">{{ loop.index }}</span><strong>{{ item.label }}</strong><span>Editable report template <span aria-hidden="true">↗</span></span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

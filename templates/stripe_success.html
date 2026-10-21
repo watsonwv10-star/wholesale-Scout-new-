@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Subscription confirmed | Wholesale Scout{% endblock %}
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+        <p class="eyebrow">PAYMENT CONFIRMED</p>
+        <h1>Thanks for subscribing.</h1>
+        <p class="auth-intro">Stripe confirmed your active {{ property_label }} subscription. Matching editable PDF downloads are now available while your subscription remains active.</p>
+        <div class="form-actions">
+            <a class="button button-primary" href="{{ url_for('pdf_studio') }}">Open PDF Studio</a>
+            <a class="button button-secondary" href="{{ url_for('account') }}">View my account</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

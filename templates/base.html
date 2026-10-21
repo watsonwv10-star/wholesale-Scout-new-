@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#102b39">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Wholesale Scout | Property analysis{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="{{ url_for('index') }}" aria-label="Wholesale Scout home">
+            <span class="brand-mark">W</span>
+            <span>WHOLESALE <strong>SCOUT</strong></span>
+        </a>
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' or request.endpoint == 'calculate' %}aria-current="page"{% endif %}>Deal calculator</a>
+            <a href="{{ url_for('pdf_studio') }}" {% if request.endpoint == 'pdf_studio' %}aria-current="page"{% endif %}>PDF studio</a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('account') }}" {% if request.endpoint == 'account' %}aria-current="page"{% endif %}>My account</a>
+            {% else %}
+            <a href="{{ url_for('login') }}">Sign in</a>
+            {% endif %}
+            <a class="nav-cta" href="{{ url_for('pdf_studio') }}#plans">Go Pro</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+        <span>Wholesale Scout · Clearer property decisions</span>
+        <span>Estimates are illustrative and not financial advice.</span>
+    </footer>
+    <aside class="assistant-widget" aria-label="Wholesale Scout product assistant">
+        <section class="assistant-panel" id="assistant-panel" hidden aria-label="Chat with the product assistant">
+            <header class="assistant-header">
+                <span class="assistant-avatar" aria-hidden="true">W</span>
+                <span><strong>Scout assistant</strong><small>Product guide · replies instantly</small></span>
+                <button class="assistant-close" type="button" aria-label="Close assistant">×</button>
+            </header>
+            <div class="assistant-messages" id="assistant-messages" aria-live="polite" aria-relevant="additions">
+                <p class="assistant-message assistant-reply">Hi! I can show you how Wholesale Scout helps property professionals compare a deal and prepare an editable report. What are you looking to do?</p>
+            </div>
+            <div class="assistant-prompts" aria-label="Suggested questions">
+                <button type="button">How does it help Realtors?</button>
+                <button type="button">What can I put in a report?</button>
+                <button type="button">How do the numbers work?</button>
+            </div>
+            <form class="assistant-form" id="assistant-form">
+                <label class="visually-hidden" for="assistant-input">Ask the Wholesale Scout assistant</label>
+                <input id="assistant-input" name="message" type="text" maxlength="400" placeholder="Ask a question…" autocomplete="off" required>
+                <button type="submit" aria-label="Send message">Send</button>
+            </form>
+            <div class="assistant-links"><a href="{{ url_for('index') }}">Try calculator</a><a href="{{ url_for('pdf_studio') }}">Make a report</a></div>
+        </section>
+        <button class="assistant-launcher" type="button" aria-controls="assistant-panel" aria-expanded="false">
+            <span aria-hidden="true">✳</span> Ask Scout
+        </button>
+    </aside>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='assistant.js') }}" defer></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

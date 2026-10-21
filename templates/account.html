@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}My account | Wholesale Scout{% endblock %}
+{% block content %}
+<section class="account-wrap">
+    <div class="account-heading">
+        <div>
+            <p class="eyebrow">CUSTOMER ACCOUNT</p>
+            <h1>My account</h1>
+            <p>Signed in as <strong>{{ current_user.email }}</strong></p>
+        </div>
+        <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="button button-secondary" type="submit">Sign out</button>
+        </form>
+    </div>
+    {% if message %}<p class="alert" role="status">{{ message }}</p>{% endif %}
+    <section class="account-card">
+        <h2>Your subscriptions</h2>
+        {% if subscriptions %}
+        <div class="subscription-list">
+            {% for subscription in subscriptions %}
+            <article class="subscription-row">
+                <div>
+                    <h3>{{ property_types[subscription.property_type].label }}</h3>
+                    <p>{{ subscription.provider|title }} · {{ subscription.status|replace('_', ' ')|title }}</p>
+                    {% if subscription.current_period_end %}
+                    <p>Current period ends {{ subscription.current_period_end|timestamp_date }}</p>
+                    {% endif %}
+                </div>
+                <div class="subscription-actions">
+                    {% if subscription.provider == 'stripe' and subscription.status in ('active', 'trialing', 'past_due') %}
+                    <form method="post" action="{{ url_for('stripe_billing_portal') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="button button-secondary" type="submit">Manage Stripe billing</button>
+                    </form>
+                    {% elif subscription.provider == 'paypal' and subscription.status == 'ACTIVE' %}
+                    <form method="post" action="{{ url_for('cancel_paypal_subscription', subscription_row_id=subscription.id) }}" onsubmit="return confirm('Cancel this PayPal subscription? PDF access will end once PayPal confirms cancellation.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="button button-secondary" type="submit">Cancel PayPal subscription</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>You do not have any subscriptions linked to this account yet. Choose a monthly plan to get started.</p>
+        {% endif %}
+        <a class="button button-primary" href="{{ url_for('pdf_studio') }}#plans">View monthly plans</a>
+    </section>
+</section>
+{% endblock %}

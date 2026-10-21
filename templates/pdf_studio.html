@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Editable PDF studio | Wholesale Scout{% endblock %}
+{% block content %}
+<section class="studio-hero">
+    <p class="eyebrow"><span class="status-dot"></span> WHOLESALE SCOUT PRO</p>
+    <h1>Make the report <span>your own.</span></h1>
+    <p>Choose a property-specific layout, tailor the deal details, then download a fillable PDF you can keep editing in your PDF reader.</p>
+</section>
+<section class="studio-layout">
+    <div class="form-panel studio-form-panel">
+        <div class="section-heading">
+            <div><p class="eyebrow">REPORT EDITOR</p><h2>Deal details</h2></div>
+            <span class="live-pill"><span></span> Preview updates live</span>
+        </div>
+        <form method="post" class="deal-form" data-live-calculator>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field-grid">
+                <div class="field full-width">
+                    <label for="property_type">Report design</label>
+                    <select id="property_type" name="property_type">
+                        {% for key, item in property_types.items() %}
+                        <option value="{{ key }}" {% if form_data.get('property_type', request.args.get('property_type', 'single_family_rental')) == key %}selected{% endif %}>{{ item.label }} report</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field full-width">
+                    <label for="property_address">Property address <span class="optional">Optional</span></label>
+                    <input id="property_address" name="property_address" type="text" maxlength="160" placeholder="Street, town or postcode" value="{{ form_data.get('property_address', '') }}">
+                </div>
+                <div class="field">
+                    <label for="purchase_price">Purchase price <span>(£)</span></label>
+                    <input id="purchase_price" name="purchase_price" type="number" min="1" step="0.01" placeholder="250,000" value="{{ form_data.get('purchase_price', '') }}" required>
+                </div>
+                <div class="field">
+                    <label for="monthly_rent">Monthly rent per unit <span>(£)</span></label>
+                    <input id="monthly_rent" name="monthly_rent" type="number" min="0" step="0.01" placeholder="1,500" value="{{ form_data.get('monthly_rent', '') }}">
+                </div>
+                <div class="field" data-hmo-field>
+                    <label for="bedrooms">Bedrooms / rentable units</label>
+                    <input id="bedrooms" name="bedrooms" type="number" min="1" step="1" value="{{ form_data.get('bedrooms', '5') }}">
+                </div>
+                <div class="field">
+                    <label for="sq_ft">Floor area <span>(sq ft)</span></label>
+                    <input id="sq_ft" name="sq_ft" type="number" min="1" step="0.01" placeholder="1,200" value="{{ form_data.get('sq_ft', '') }}" required>
+                </div>
+                <div class="field">
+                    <label for="refurb_cost">Refurbishment budget <span>(£)</span></label>
+                    <input id="refurb_cost" name="refurb_cost" type="number" min="0" step="0.01" placeholder="Estimate automatically" value="{{ form_data.get('refurb_cost', '') }}">
+                    <small>Leave blank to estimate from area and condition.</small>
+                </div>
+                <div class="field" data-arv-field>
+                    <label for="arv">After-repair value <span>(£)</span></label>
+                    <input id="arv" name="arv" type="number" min="0" step="0.01" placeholder="330,000" value="{{ form_data.get('arv', '') }}">
+                </div>
+                <div class="field full-width">
+                    <label for="summary">Condition notes <span class="optional">Optional</span></label>
+                    <textarea id="summary" name="summary" rows="3" maxlength="1000" placeholder="Describe the condition, strategy, and key assumptions.">{{ form_data.get('summary', '') }}</textarea>
+                </div>
+                <div class="field full-width">
+                    <label for="notes">Additional report notes <span class="optional">Optional</span></label>
+                    <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Add your own context and assumptions.">{{ form_data.get('notes', '') }}</textarea>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="button button-primary" type="submit" name="action" value="download_pdf">Download editable PDF <span aria-hidden="true">↓</span></button>
+                <a class="button button-secondary" href="{{ url_for('index') }}">Back to live calculator</a>
+            </div>
+        </form>
+        {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+        {% if result and not error %}<div class="alert alert-success" role="status">{{ result.property_label }} report is ready to download. Your PDF includes editable form fields.</div>{% endif %}
+    </div>
+    <aside class="preview-column">
+        <div class="preview-label"><span>LIVE PREVIEW</span><span class="preview-page">01 / 01</span></div>
+        <article class="report-preview" aria-live="polite">
+            <div class="preview-cover">
+                <span>WHOLESALE SCOUT</span>
+                <strong data-preview-title>Single-family rental deal report</strong>
+                <small data-preview-address>Property address</small>
+            </div>
+            <div class="preview-body">
+                <div class="preview-highlight"><span data-preview-metric-label>NET RENTAL YIELD</span><strong data-preview-metric>—</strong></div>
+                <p class="preview-section-label">DEAL OVERVIEW</p>
+                <div class="preview-detail"><span>Purchase price</span><strong data-preview-purchase>£—</strong></div>
+                <div class="preview-detail"><span>Monthly rent</span><strong data-preview-rent>£—</strong></div>
+                <div class="preview-detail"><span>Floor area</span><strong data-preview-area>— sq ft</strong></div>
+                <div class="preview-detail"><span>Refurbishment</span><strong data-preview-refurb>£—</strong></div>
+                <div class="preview-detail"><span>Deal rating</span><strong data-preview-rating>—</strong></div>
+                <div class="preview-note" data-preview-notes>Your condition notes and assumptions appear here.</div>
+                <p class="preview-disclaimer">Illustrative analysis only · Verify figures independently</p>
+            </div>
+        </article>
+        <p class="preview-caption">Your downloaded PDF also contains editable fields for the property, figures, rating and notes. Edit figures here and download a fresh report to recalculate yields.</p>
+    </aside>
+</section>
+
+<section class="pricing-section" id="plans">
+    <div class="pricing-intro">
+        <p class="eyebrow">MONTHLY SUBSCRIPTIONS</p>
+        <h2>Choose your property toolkit</h2>
+        <p>One subscription unlocks PDF downloads for its matching property type while it stays active. Use the live calculator and PDF preview for free.</p>
+        {% if founders_offer %}
+        <p class="founders-callout">Founding customer offer: 25% off the first 3 months for the first 10 card subscribers.</p>
+        {% endif %}
+        {% if payment_message %}<p class="alert checkout-payment-message" role="status">{{ payment_message }}</p>{% endif %}
+        {% if current_user.is_authenticated %}
+        <p class="account-hint">Signed in as {{ current_user.email }} · Subscription downloads are linked to your account.</p>
+        {% else %}
+        <p class="account-hint">Create or sign in to an account before subscribing. Your subscription will stay linked to your account across devices.</p>
+        {% endif %}
+    </div>
+    <div class="pricing-grid" aria-label="Monthly property subscription plans">
+        {% for plan in subscription_plans %}
+        <article class="pricing-card {% if form_data.get('property_type', request.args.get('property_type')) == plan.key %}pricing-card-selected{% endif %}">
+            <span class="pricing-kicker">MONTHLY PLAN</span>
+            <h3>{{ plan.label }}</h3>
+            <p class="plan-price">£{{ plan.monthly_price }}<span> / month</span></p>
+            {% if founders_offer %}<p class="founders-price">Founders: £{{ '%.2f'|format(plan.monthly_price|float * 0.75) }} / month for 3 months</p>{% endif %}
+            <p class="plan-access">Custom PDF reports and a sample {{ plan.label|lower }} listing.</p>
+            {% if not current_user.is_authenticated %}
+            <a class="button button-primary pricing-button" href="{{ url_for('login', next=url_for('pdf_studio', property_type=plan.key) + '#plans') }}">Sign in to subscribe</a>
+            <p class="provider-unavailable">New here? <a href="{{ url_for('register', next=url_for('pdf_studio', property_type=plan.key) + '#plans') }}">Create an account</a></p>
+            {% elif plan.stripe_available %}
+            <form action="{{ url_for('start_card_checkout', property_type=plan.key) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="button stripe-button pricing-button">Subscribe by card</button>
+            </form>
+            {% else %}
+            <p class="provider-unavailable">Card checkout setup pending</p>
+            {% endif %}
+            {% if current_user.is_authenticated and plan.paypal_available %}
+            <div class="paypal-subscription-button" data-property-type="{{ plan.key }}" aria-label="Subscribe to {{ plan.label }} with PayPal"></div>
+            {% elif current_user.is_authenticated %}
+            <p class="provider-unavailable">PayPal setup pending</p>
+            {% endif %}
+            {% if plan.sample_download_available %}
+            <a class="button button-secondary pricing-button sample-download-button" href="{{ url_for('download_sample_property_pdf', property_type=plan.key) }}">Download sample PDF</a>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    <p class="checkout-disclaimer pricing-disclaimer">Prices renew monthly until cancelled. Manage billing in My account. The live calculator and previews remain free. Never enter bank or card details in a message; Stripe and PayPal process checkout securely.</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='paypal.js') }}" defer></script>
+{% endblock %}
